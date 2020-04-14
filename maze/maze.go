@@ -68,7 +68,7 @@ func walk(maze [][]int, start, end point) [][]int {
 			// maze at next is 0
 			// steps at next is 0
 			// next != start
-			// 下一步是否越界，且是不是1(墙)
+			// 下一步是否越界且是不是1(墙)
 			val, ok := next.at(maze)
 			if !ok || val == 1 {
 				continue
@@ -82,7 +82,7 @@ func walk(maze [][]int, start, end point) [][]int {
 			if next == start {
 				continue
 			}
-			// 记录下一步的steps
+			// 获取当前steps，并+1计入steps中next point
 			curSteps, _ := cur.at(steps)
 			steps[next.i][next.j] = curSteps + 1
 			// 将下一步加入Queue
