@@ -2,13 +2,18 @@ package main
 
 import (
 	"github.com/corrots/go-demo/crawler/engine"
+	"github.com/corrots/go-demo/crawler/scheduler"
 	"github.com/corrots/go-demo/crawler/zhenai/parser"
 )
 
 const URL = "http://www.zhenai.com/zhenghun"
 
 func main() {
-	engine.Run(engine.Request{
+	e := &engine.ConcurrentEngine{
+		Scheduler: &scheduler.SimpleScheduler{},
+		ChanCount: 10,
+	}
+	e.Run(engine.Request{
 		URL:        URL,
 		ParserFunc: parser.ParseCityList,
 	})
