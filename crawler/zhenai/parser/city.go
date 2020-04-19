@@ -16,7 +16,7 @@ func ParseCity(contents []byte) engine.ParseResult {
 	result := engine.ParseResult{}
 	for _, val := range matches {
 		name := string(val[2])
-		result.Items = append(result.Items, "User: "+name)
+		//result.Items = append(result.Items, "User: "+name)
 		url := strings.Replace(string(val[1]), "album", "m", 1)
 		result.Requests = append(result.Requests, engine.Request{
 			URL: url,

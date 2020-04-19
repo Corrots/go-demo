@@ -3,10 +3,14 @@ package engine
 import "fmt"
 
 type Scheduler interface {
+	ReadyNotifier
 	Register(request Request)
-	ConfigureMasterWorkerChan(chan Request)
-	WorkerReady(chan Request)
+	WorkerChan() chan Request
 	Run()
+}
+
+type ReadyNotifier interface {
+	WorkerReady(chan Request)
 }
 
 type ConcurrentEngine struct {
@@ -20,7 +24,7 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	e.Scheduler.Run()
 	//e.Scheduler.ConfigureMasterWorkerChan(in)
 	for i := 0; i < e.ChanCount; i++ {
-		e.createWorker(out)
+		createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
 	}
 
 	for _, r := range seeds {
@@ -43,11 +47,11 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	}
 }
 
-func (e *ConcurrentEngine) createWorker(out chan ParseResult) {
-	in := make(chan Request)
+func createWorker(in chan Request, out chan ParseResult, notifier ReadyNotifier) {
+	//in := make(chan Request)
 	go func() {
 		for {
-			e.Scheduler.WorkerReady(in)
+			notifier.WorkerReady(in)
 			request := <-in
 			result, err := worker(request)
 			if err != nil {

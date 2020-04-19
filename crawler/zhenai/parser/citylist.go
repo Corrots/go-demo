@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"regexp"
 
 	"github.com/corrots/go-demo/crawler/engine"
@@ -15,7 +14,7 @@ func ParseCityList(contents []byte) engine.ParseResult {
 	matches := reg.FindAllSubmatch(contents, -1)
 	result := engine.ParseResult{}
 	for _, val := range matches {
-		result.Items = append(result.Items, fmt.Sprintf("City: %s", val[2]))
+		//result.Items = append(result.Items, fmt.Sprintf("City: %s", val[2]))
 		result.Requests = append(result.Requests, engine.Request{
 			URL:        string(val[1]),
 			ParserFunc: ParseCity,

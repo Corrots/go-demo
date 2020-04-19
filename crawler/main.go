@@ -9,6 +9,10 @@ import (
 const URL = "http://www.zhenai.com/zhenghun"
 
 func main() {
+	//e := &engine.ConcurrentEngine{
+	//	Scheduler: &scheduler.SimpleScheduler{},
+	//	ChanCount: 10,
+	//}
 	e := &engine.ConcurrentEngine{
 		Scheduler: &scheduler.QueuedScheduler{},
 		ChanCount: 10,
