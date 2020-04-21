@@ -1,7 +1,5 @@
 package engine
 
-import "fmt"
-
 type Scheduler interface {
 	ReadyNotifier
 	Register(request Request)
@@ -16,13 +14,12 @@ type ReadyNotifier interface {
 type ConcurrentEngine struct {
 	Scheduler Scheduler
 	ChanCount int
+	ItemChan  chan Item
 }
 
 func (e *ConcurrentEngine) Run(seeds ...Request) {
-	//in := make(chan Request)
 	out := make(chan ParseResult)
 	e.Scheduler.Run()
-	//e.Scheduler.ConfigureMasterWorkerChan(in)
 	for i := 0; i < e.ChanCount; i++ {
 		createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
 	}
@@ -31,24 +28,22 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 		e.Scheduler.Register(r)
 	}
 
-	itemCount := 0
 	for {
 		result := <-out
 		// 遍历打印item
 		for _, item := range result.Items {
-			fmt.Printf("got item #%d: %v\n", itemCount, item)
-			fmt.Printf("got item %v\n", item)
+			go func() { e.ItemChan <- item }()
 		}
 		//将Request注册
 		for _, r := range result.Requests {
-			e.Scheduler.Register(r)
-			itemCount++
+			if !isDuplicate(r.URL) {
+				e.Scheduler.Register(r)
+			}
 		}
 	}
 }
 
 func createWorker(in chan Request, out chan ParseResult, notifier ReadyNotifier) {
-	//in := make(chan Request)
 	go func() {
 		for {
 			notifier.WorkerReady(in)
@@ -60,4 +55,14 @@ func createWorker(in chan Request, out chan ParseResult, notifier ReadyNotifier)
 			out <- result
 		}
 	}()
+}
+
+var visitedUrls = make(map[string]bool)
+
+func isDuplicate(url string) bool {
+	if visitedUrls[url] {
+		return true
+	}
+	visitedUrls[url] = true
+	return false
 }

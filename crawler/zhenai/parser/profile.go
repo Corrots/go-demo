@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	urlReg = regexp.MustCompile(`https://m.zhenai.com/u/(\d+).html`)
+
 	genderReg    = regexp.MustCompile(`<span[^>]+>关注(\p{Han})</span>`)
 	marriageReg  = regexp.MustCompile(`<div [^>]*tag[^>]+>([未婚离异丧偶]+)</div>`)
 	ageReg       = regexp.MustCompile(`<div [^>]*tag[^>]+>(\d+)岁</div>`)
@@ -22,7 +24,7 @@ var (
 	houseReg     = regexp.MustCompile(`<div [^>]*tag[^>]+>(\p{Han}+房)</div>`)
 )
 
-func ParseProfile(c []byte, name string) engine.ParseResult {
+func ParseProfile(c []byte, name, url string) engine.ParseResult {
 	profile := model.Profile{}
 
 	profile.Gender = convertGender(extractString(c, genderReg))
@@ -39,9 +41,13 @@ func ParseProfile(c []byte, name string) engine.ParseResult {
 	profile.House = extractString(c, houseReg)
 	profile.Car = extractString(c, carReg)
 
-	result := engine.ParseResult{
-		Items: []interface{}{profile},
-	}
+	var result engine.ParseResult
+	id := extractString([]byte(url), urlReg)
+	result.Items = append(result.Items, engine.Item{
+		Url:     url,
+		Id:      id,
+		Payload: profile,
+	})
 	return result
 }
 
